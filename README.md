@@ -1,8 +1,6 @@
 # RUC-Registrant
 
- Automatic registration of epidemic prevention and control.
-
-selenium 实现的 RUC 疫情防控通电脑端自动登记脚本
+为了帮助广大经常忘填疫情防控通的RUCer，selenium 实现的 RUC 疫情防控通电脑端自动登记脚本悄咪咪地出现在了 github 上（雾
 
 ### 所用库
 
@@ -28,7 +26,7 @@ log : 只对 main_plus.py 生效，0 表示低通知，即只在失败时通知�
 
 ### 进阶使用指南
 
-main_plus.py 将尽量尝试静默执行，并改用 win10toast 库调用 win10 系统通知栏来显示通知
+main_plus.py 将尽量尝试静默运行，并改用 win10toast 库调用 win10 系统通知栏来显示通知
 
 所以把 log 改成 0，把 main_plus.py 和科学上网设成开机自启，其中前者用创建快捷方式+最小化启动就能无感使用了
 
