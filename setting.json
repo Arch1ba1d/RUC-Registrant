@@ -2,6 +2,6 @@
     "url": "https://m.ruc.edu.cn/uc/wap/login?redirect=https%3A%2F%2Fm.ruc.edu.cn%2Fsite%2FapplicationSquare%2Findex%3Fsid%3D2",
     "student_ID": 2021000000,
     "password": "RUC_turling_2021",
-    "thresh_time": 10,
+    "thresh_time": 3,
     "log": 1
 }
