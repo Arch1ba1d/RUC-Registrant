@@ -4,15 +4,23 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 import json
 import time
+from sys import exit
+from win10toast import ToastNotifier
+
+
+def printExit(text, tim, ex=0):
+    print(text)
+    time.sleep(tim)
+    exit(ex)
 
 
 class Registrant():
     def __init__(self, driver_kind='Firefox', silent=True, student_ID=None, password=None) -> None:
         '''
-        # Parameters
+        ### Parameters
         student_ID & password : you can also use Registrant().set_ID_password() to set
 
-        driver_kind : {'Firefox', 'Chrome'}, default='Firefox
+        driver_kind : {'Firefox', 'Chrome'}, default='Firefox'
 
         silent : bool, default=True
             Not to open the browser window
@@ -46,44 +54,48 @@ class Registrant():
         self.student_ID = student_ID
         self.password = password
 
-    def register(self, url='https://m.ruc.edu.cn/uc/wap/login?redirect=https%3A%2F%2Fm.ruc.edu.cn%2Fsite%2FapplicationSquare%2Findex%3Fsid%3D2'):
-        if not (self.student_ID and self.password):
-            raise ValueError
+    def register(self, url, thresh_time, log):
+        try:
+            if not (self.student_ID and self.password):
+                raise ValueError
+        except ValueError:
+            printExit('账号密码错误', thresh_time, 1)
         self.driver.get(url)
-        # account -> password -> login
-        self.driver.find_element(
-            By.XPATH, '/html/body/div[1]/div[2]/div[1]/input').send_keys(self.student_ID)
-        self.driver.find_element(
-            By.XPATH, '/html/body/div[1]/div[2]/div[2]/input').send_keys(self.password)
-        self.driver.find_element(By.XPATH, '/html/body/div[1]/div[3]').click()
+        try:
+            # account -> password -> login
+            self.driver.find_element(
+                By.XPATH, '/html/body/div[1]/div[2]/div[1]/input').send_keys(self.student_ID)
+            self.driver.find_element(
+                By.XPATH, '/html/body/div[1]/div[2]/div[2]/input').send_keys(self.password)
+            self.driver.find_element(
+                By.XPATH, '/html/body/div[1]/div[3]').click()
 
-        # Daily report
-        WebDriverWait(driver=self.driver, timeout=10,
-                      poll_frequency=0.5).until(lambda driver: driver.find_element(By.XPATH, '/html/body/div[1]/div[1]/div/section/div/div[3]/div/ul/li/span'))
-        self.driver.find_element(
-            By.XPATH, '/html/body/div[1]/div[1]/div/section/div/div[3]/div/ul/li/span').click()
+            # Daily report
+            WebDriverWait(driver=self.driver, timeout=10,
+                          poll_frequency=0.5).until(lambda driver: driver.find_element(By.XPATH, '/html/body/div[1]/div[1]/div/section/div/div[3]/div/ul/li/span'))
+            self.driver.find_element(
+                By.XPATH, '/html/body/div[1]/div[1]/div/section/div/div[3]/div/ul/li/span').click()
 
-        # Location -> Submit
-        WebDriverWait(driver=self.driver, timeout=10,
-                      poll_frequency=0.5).until(lambda driver: driver.find_element(By.XPATH, '/html/body/div[1]/div/div/section/div[4]/ul/li[8]/div/input'))
-        self.driver.find_element(
-            By.XPATH, '/html/body/div[1]/div/div/section/div[4]/ul/li[8]/div/input').click()
-        time.sleep(1)
-        self.driver.find_element(
-            By.XPATH, '/html/body/div[1]/div/div/section/div[5]/div/a').click()
-        time.sleep(1)
+            # Location -> Submit
+            WebDriverWait(driver=self.driver, timeout=10,
+                          poll_frequency=0.5).until(lambda driver: driver.find_element(By.XPATH, '/html/body/div[1]/div/div/section/div[4]/ul/li[8]/div/input'))
+            self.driver.find_element(
+                By.XPATH, '/html/body/div[1]/div/div/section/div[4]/ul/li[8]/div/input').click()
+            time.sleep(1)
+            self.driver.find_element(
+                By.XPATH, '/html/body/div[1]/div/div/section/div[5]/div/a').click()
+            time.sleep(1)
+        except NoSuchElementException:
+            printExit('签到出错,没有找到对应元素', thresh_time, 1)
+        except TimeoutException:
+            printExit('签到出错,查找元素超时', thresh_time, 1)
         try:
             self.driver.find_element(
                 By.XPATH, '/html/body/div[4]/div/div[2]/div[2]').click()
         except NoSuchElementException:
-            print('今日已填报')
+            printExit('今日已填报', thresh_time, 0)
         else:
-            print('成功填报')
-        time.sleep(5)
-        quit()
-
-    def debug(self):
-        print(self.student_ID)
+            printExit('成功填报', thresh_time, 0)
 
 
 if __name__ == '__main__':
@@ -91,4 +103,5 @@ if __name__ == '__main__':
         student_info = json.load(fp)
     reg = Registrant(silent=True)
     reg.set_ID_password(student_info['student_ID'], student_info['password'])
-    reg.register()
+    reg.register(student_info['url'],
+                 student_info['thresh_time'], student_info['log'])
