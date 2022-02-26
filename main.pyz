@@ -5,11 +5,15 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException
 import json
 import time
 from sys import exit
+from win10toast import ToastNotifier
 
 
 def printExit(text, tim, ex=0):
-    print(text)
-    time.sleep(tim)
+    print("error")
+    toaster = ToastNotifier()
+    toaster.show_toast("Registrant",
+                       text,
+                       duration=tim)
     exit(ex)
 
 
@@ -27,6 +31,7 @@ class Registrant():
         self.student_ID = student_ID
         self.password = password
         self.silent = silent
+
         if driver_kind == 'Firefox':
             self.options = webdriver.FirefoxOptions()
             self.initOptions()
@@ -44,6 +49,10 @@ class Registrant():
         '''
         self.options.headless = self.silent
         self.options.add_argument('--disable-images')
+        # self.options.add_experimental_option(
+        #     "prefs", {"profile.default_content_setting_values.geolocation": 1})
+        # self.options.set_preference("geo.prompt.testing", True)
+        # self.options.set_preference("geo.prompt.testing.allow", True)
         # self.options.add_experimental_option('detach', True)
         # self.options.add_experimental_option('useAutomationExtension', False)
         # self.options.add_experimental_option(
@@ -90,15 +99,17 @@ class Registrant():
             self.driver.find_element(
                 By.XPATH, '/html/body/div[4]/div/div[2]/div[2]').click()
         except NoSuchElementException:
-            printExit('今日已填报', thresh_time, 0)
+            if log:
+                printExit('今日已填报', thresh_time, 0)
         else:
-            printExit('成功填报', thresh_time, 0)
+            if log:
+                printExit('成功填报', thresh_time, 0)
 
 
 if __name__ == '__main__':
     with open('./setting.json', 'r', encoding='utf8') as fp:
         student_info = json.load(fp)
-    reg = Registrant(silent=True)
+    reg = Registrant(silent=False)
     reg.set_ID_password(student_info['student_ID'], student_info['password'])
     reg.register(student_info['url'],
                  student_info['thresh_time'], student_info['log'])
